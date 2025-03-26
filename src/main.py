@@ -1,5 +1,6 @@
 import sys
 from contextlib import asynccontextmanager
+from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
@@ -25,7 +26,7 @@ app = FastAPI(lifespan=lifespan)  # run -> uvicorn src.main:app
 
 
 @app.post("/add_record", response_model=TronRequestResponse)
-def get_tron_info(request: TronRequestCreate, db: Session = Depends(get_db)):
+def get_tron_info(request: TronRequestCreate, db: Session = Depends(get_db)) -> TronRequestResponse:
     try:
         data = get_tron_account_info(request.address)
 
@@ -41,7 +42,7 @@ def get_tron_info(request: TronRequestCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/records")
-def get_history(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+def get_history(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)) -> List[TronRequestResponse]:
     try:
         records = get_records(db, skip, limit)
         if not records:

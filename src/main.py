@@ -1,11 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from src.database import get_db, init_db
-from src.tron import get_tron_account_info
-from src.crud import save_request, get_requests
-from src.schemas import TronRequestCreate, TronRequestResponse
 import sys
 from contextlib import asynccontextmanager
+
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
+
+from src.crud import get_requests, save_request
+from src.database import get_db, init_db
+from src.schemas import TronRequestCreate, TronRequestResponse
+from src.tron import get_tron_account_info
 
 
 # noinspection PyUnusedLocal
@@ -19,7 +21,7 @@ async def lifespan(a: FastAPI):
         sys.exit(1)
 
 
-app = FastAPI(lifespan=lifespan) # run -> uvicorn src.main:app
+app = FastAPI(lifespan=lifespan)  # run -> uvicorn src.main:app
 
 
 @app.post("/add_record", response_model=TronRequestResponse)

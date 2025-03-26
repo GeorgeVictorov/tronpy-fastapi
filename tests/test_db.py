@@ -1,12 +1,9 @@
 import pytest
-from sqlalchemy.orm import Session
-
-from src.crud import save_request, get_records
-from src.models import TronRequest
-
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from src.models import Base
+from sqlalchemy.orm import Session, sessionmaker
+
+from src.crud import get_records, save_request
+from src.models import Base, TronRequest
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 

@@ -2,3 +2,5 @@
 .venv
 .env
 /poetry.lock
+src/tron_account.py
+src/tron_info.py

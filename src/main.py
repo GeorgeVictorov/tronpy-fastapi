@@ -34,6 +34,8 @@ def get_tron_info(request: TronRequestCreate, db: Session = Depends(get_db)):
 
         saved = save_request(db, request.address, data["balance"], data["bandwidth"], data["energy"])
         return saved
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 

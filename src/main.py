@@ -6,11 +6,11 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.ascii_pics import TOTORO
 from src.crud import get_records, save_request
 from src.database import get_db, init_db
 from src.schemas import TronRequestCreate, TronRequestResponse
 from src.tron import get_tron_account_info
-from src.ascii_pics import TOTORO
 
 
 # noinspection PyUnusedLocal

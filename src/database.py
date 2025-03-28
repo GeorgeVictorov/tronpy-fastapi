@@ -1,12 +1,13 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine
+from sqlalchemy.ext.asyncio import (AsyncEngine, async_sessionmaker,
+                                    create_async_engine)
 
-from src.models import Base
 from src.config import load_config
+from src.models import Base
 
 config = load_config()
 db_url = config.db.database_url
 
-engine = create_async_engine(db_url)
+engine: AsyncEngine = create_async_engine(db_url)
 session_local = async_sessionmaker(engine)
 
 

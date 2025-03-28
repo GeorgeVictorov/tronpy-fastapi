@@ -7,20 +7,21 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.crud import get_records, save_request
-from src.database import get_db
+from src.database import get_db, init_db
 from src.schemas import TronRequestCreate, TronRequestResponse
 from src.tron import get_tron_account_info
 from src.ascii_pics import TOTORO
 
+
 # noinspection PyUnusedLocal
-# @asynccontextmanager
-# async def lifespan(a: FastAPI):
-#     try:
-#         init_db()
-#         yield
-#     except Exception as e:
-#         print(f"Error initializing database: {e}")
-#         sys.exit(1)
+@asynccontextmanager
+async def lifespan(a: FastAPI):
+    try:
+        await init_db()
+        yield
+    except Exception as e:
+        print(f"Error initializing database: {e}")
+        sys.exit(1)
 
 
 app = FastAPI()  # run -> uvicorn src.main:app

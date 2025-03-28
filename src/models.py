@@ -1,6 +1,5 @@
-import datetime
-
 from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy.sql import func
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -14,4 +13,4 @@ class TronRequest(Base):
     balance = Column(Integer)
     bandwidth = Column(Integer)
     energy = Column(Integer)
-    created_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
+    created_at = Column(DateTime, server_default=func.now())

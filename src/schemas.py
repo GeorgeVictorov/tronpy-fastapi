@@ -6,6 +6,6 @@ class TronRequestCreate(BaseModel):
 
 
 class TronRequestResponse(TronRequestCreate):
-    balance: int
-    bandwidth: int
-    energy: int
+    balance: int | None
+    bandwidth: int | None
+    energy: int | None

@@ -30,7 +30,7 @@ app = FastAPI()  # run -> uvicorn src.main:app
 @app.post("/add_record", response_model=TronRequestResponse)
 async def get_tron_info(request: TronRequestCreate, db: AsyncSession = Depends(get_db)) -> TronRequestResponse:
     try:
-        data = get_tron_account_info(request.address)
+        data = await get_tron_account_info(request.address)
 
         if not data:
             raise HTTPException(status_code=404, detail="No data for address")

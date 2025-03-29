@@ -1,12 +1,12 @@
-import pytest
-from src.main import app
-from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock
-from src.ascii_pics import TOTORO
-from httpx import ASGITransport, AsyncClient, Response, Request
 
-from src.crud import get_records
+import pytest
+from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient, Request, Response
+
+from src.ascii_pics import TOTORO
 from src.database import get_db
+from src.main import app
 
 client_sync = TestClient(app)
 

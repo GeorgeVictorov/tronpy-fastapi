@@ -35,8 +35,10 @@ async def get_history(skip: int = 0, limit: int = 10, db: AsyncSession = Depends
         if not records:
             raise HTTPException(status_code=404, detail="No records found")
         return records
-    except Exception:
+    except HTTPException:
         raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 @app.get("/", response_class=PlainTextResponse)

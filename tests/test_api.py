@@ -78,3 +78,22 @@ async def test_get_history_no_records(override_get_db, mocker, async_client):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "No records found"}
+
+
+async def test_get_history_server_error(override_get_db, mocker, async_client):
+    mocker.patch("src.api.api.get_records", AsyncMock(side_effect=Exception("DB error")))
+
+    response = await async_client.get("/records?skip=0&limit=10")
+
+    assert response.status_code == 500
+
+
+@pytest.mark.parametrize("skip, limit", [(0, 10), (5, 5), (10, 2)])
+async def test_get_history_with_pagination(override_get_db, mocker, async_client, skip, limit):
+    mock_data = [{"address": "fake_address", "balance": 100, "bandwidth": 100, "energy": 10}]
+    mocker.patch("src.api.api.get_records", AsyncMock(return_value=mock_data))
+
+    response = await async_client.get(f"/records?skip={skip}&limit={limit}")
+
+    assert response.status_code == 200
+    assert response.json() == mock_data

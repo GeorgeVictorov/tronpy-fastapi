@@ -1,14 +1,18 @@
 import pytest
 from src.main import app
 from fastapi.testclient import TestClient
+from unittest.mock import AsyncMock
 from src.ascii_pics import TOTORO
 from httpx import ASGITransport, AsyncClient, Response, Request
 
-client = TestClient(app)
+from src.crud import get_records
+from src.database import get_db
+
+client_sync = TestClient(app)
 
 
 def test_welcome_sync():
-    response = client.get("/")
+    response = client_sync.get("/")
     assert response.status_code == 200
     assert response.text == TOTORO
 
@@ -40,3 +44,37 @@ async def test_service_unavailable(failing_client):
     response = await failing_client.get("/")
     assert response.status_code == 503
     assert response.json() == {"detail": "Service Unavailable"}
+
+
+@pytest.fixture
+def mock_db_session():
+    return AsyncMock()
+
+
+@pytest.fixture
+def override_get_db(mock_db_session):
+    async def mock_get_db():
+        yield mock_db_session
+
+    app.dependency_overrides[get_db] = mock_get_db
+    return mock_db_session
+
+
+async def test_get_history_with_records(override_get_db, mocker, async_client):
+    mock_data = [{"address": "fake_address", "balance": 100, "bandwidth": 100, "energy": 10}]
+
+    mocker.patch("src.api.api.get_records", AsyncMock(return_value=mock_data))
+
+    response = await async_client.get("/records?skip=0&limit=10")
+
+    assert response.status_code == 200
+    assert response.json() == mock_data
+
+
+async def test_get_history_no_records(override_get_db, mocker, async_client):
+    mocker.patch("src.api.api.get_records", AsyncMock(return_value=[]))
+
+    response = await async_client.get("/records?skip=0&limit=10")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "No records found"}

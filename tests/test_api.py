@@ -119,3 +119,17 @@ async def test_get_tron_info_no_data_on_address(override_get_db, mocker, async_c
 
     assert response.status_code == 404
     assert response.json() == {'detail': 'No data for address'}
+
+
+async def test_get_tron_info_db_error(override_get_db, mocker, async_client):
+    mock_data = {"address": "fake_address", "balance": 100, "bandwidth": 256, "energy": 10000}
+
+    mocker.patch("src.api.api.get_tron_account_info", AsyncMock(return_value=mock_data))
+    mocker.patch("src.api.api.save_request", AsyncMock(side_effect=Exception('DB error')))
+
+    request_payload = {"address": "fake_address"}
+
+    response = await async_client.post("/add_record", json=request_payload)
+
+    assert response.status_code == 500
+    assert response.json() == {'detail': 'Internal server error: DB error'}

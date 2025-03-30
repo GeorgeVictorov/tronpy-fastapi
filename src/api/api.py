@@ -3,6 +3,7 @@ from typing import List
 from fastapi import Depends, HTTPException
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from tronpy.exceptions import AddressNotFound
 
 from src.ascii_pics import TOTORO
 from src.crud import get_records, save_request
@@ -17,13 +18,12 @@ async def get_tron_info(request: TronRequestCreate, db: AsyncSession = Depends(g
     try:
         data = await get_tron_account_info(request.address)
 
-        if not data:
-            raise HTTPException(status_code=404, detail="No data for address")
-
         saved = await save_request(db, request.address, data["balance"], data["bandwidth"], data["energy"])
         return saved
-    except HTTPException as http_exc:
-        raise http_exc
+
+    except AddressNotFound:
+        raise HTTPException(status_code=404, detail="No data for address")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 

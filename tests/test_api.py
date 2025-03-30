@@ -18,8 +18,9 @@ def test_welcome_sync():
 
 
 @pytest.fixture
-async def async_client():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+async def async_client(transport=None):
+    transport = transport or ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 
@@ -29,9 +30,14 @@ class FailingTransport(ASGITransport):
 
 
 @pytest.fixture
-async def failing_client():
-    async with AsyncClient(transport=FailingTransport(app), base_url="http://test") as ac:
-        yield ac
+def override_get_db():
+    mock_db = AsyncMock()
+
+    async def mock_get_db():
+        yield mock_db
+
+    app.dependency_overrides[get_db] = mock_get_db
+    return mock_db
 
 
 async def test_welcome_async(async_client):
@@ -40,24 +46,11 @@ async def test_welcome_async(async_client):
     assert response.text == TOTORO
 
 
-async def test_service_unavailable(failing_client):
-    response = await failing_client.get("/")
-    assert response.status_code == 503
-    assert response.json() == {"detail": "Service Unavailable"}
-
-
-@pytest.fixture
-def mock_db_session():
-    return AsyncMock()
-
-
-@pytest.fixture
-def override_get_db(mock_db_session):
-    async def mock_get_db():
-        yield mock_db_session
-
-    app.dependency_overrides[get_db] = mock_get_db
-    return mock_db_session
+async def test_service_unavailable(async_client):
+    async with AsyncClient(transport=FailingTransport(app), base_url="http://test") as failing_client:
+        response = await failing_client.get("/")
+        assert response.status_code == 503
+        assert response.json() == {"detail": "Service Unavailable"}
 
 
 async def test_get_history_with_records(override_get_db, mocker, async_client):

@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  title: FastAPI
+  version: 0.1.0
+paths:
+  /add_record:
+    post:
+      summary: Get Tron Info
+      operationId: get_tron_info_add_record_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TronRequestCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TronRequestResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /records:
+    get:
+      summary: Get History
+      operationId: get_history_records_get
+      parameters:
+        - name: skip
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            title: Skip
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TronRequestResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /:
+    get:
+      summary: Welcome
+      operationId: welcome__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    TronRequestCreate:
+      properties:
+        address:
+          type: string
+          title: Address
+      type: object
+      required:
+        - address
+      title: TronRequestCreate
+    TronRequestResponse:
+      properties:
+        address:
+          type: string
+          title: Address
+        balance:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Balance
+        bandwidth:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Bandwidth
+        energy:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Energy
+      type: object
+      required:
+        - address
+        - balance
+        - bandwidth
+        - energy
+      title: TronRequestResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError

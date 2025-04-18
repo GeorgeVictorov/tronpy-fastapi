@@ -34,6 +34,7 @@ async def get_history(skip: int = 0, limit: int = 10, db: AsyncSession = Depends
         records = await get_records(db, skip, limit)
         if not records:
             raise HTTPException(status_code=404, detail="No records found")
+        print(records)
         return records
     except HTTPException:
         raise

@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 
 
-
 @dataclass
 class RedisConfig:
     redis_url: str

@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import Depends, HTTPException
 from fastapi.responses import PlainTextResponse
+from fastapi.background import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from tronpy.exceptions import AddressNotFound
 
@@ -12,7 +13,7 @@ from src.main import app
 from src.schemas import TronRequestCreate, TronRequestResponse
 from src.tron import get_tron_account_info
 
-from src.redis_cache import redis_cache
+from src.redis_cache import get_redis_client, get_cached_data, set_cached_data
 
 
 @app.post("/add_record", response_model=TronRequestResponse)
@@ -31,20 +32,28 @@ async def get_tron_info(request: TronRequestCreate, db: AsyncSession = Depends(g
 
 
 @app.get("/records")
-@redis_cache(ttl=150)
-async def get_history(skip: int = 0,
+async def get_history(background_tasks: BackgroundTasks,
+                      skip: int = 0,
                       limit: int = 10,
                       db: AsyncSession = Depends(get_db),
+                      redis_client=Depends(get_redis_client),
                       ) -> List[TronRequestResponse]:
-    try:
-        records = await get_records(db, skip, limit)
-        if not records:
-            raise HTTPException(status_code=404, detail="No records found")
-        return records
-    except HTTPException:
-        raise
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+    cache_key = f'records-{skip}-{limit}'
+    cached = await get_cached_data(redis_client, cache_key)
+    if not cached:
+        try:
+            records = await get_records(db, skip, limit)
+            if not records:
+                raise HTTPException(status_code=404, detail="No records found")
+            response = [TronRequestResponse.model_validate(record).model_dump() for record in records]
+
+            background_tasks.add_task(set_cached_data, redis_client, cache_key, response, 150)
+            return records
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=500, detail="Internal Server Error")
+    return [TronRequestResponse(**item) for item in cached]
 
 
 @app.get("/", response_class=PlainTextResponse)

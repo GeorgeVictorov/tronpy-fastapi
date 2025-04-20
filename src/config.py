@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 class RedisConfig:
     redis_url: str
 
+
 @dataclass
 class PostgresConfig:
     database_url: str

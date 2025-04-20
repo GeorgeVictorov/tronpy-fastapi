@@ -1,6 +1,8 @@
 import json
+
 import redis.asyncio as redis
 from redis.exceptions import RedisError
+
 from src.config import load_config
 
 config = load_config()

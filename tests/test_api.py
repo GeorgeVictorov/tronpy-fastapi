@@ -37,8 +37,14 @@ def override_get_db():
     async def mock_get_db():
         yield mock_db
 
-    app.dependency_overrides[get_db] = mock_get_db
+    app.dependency_overrides[get_db] = mock_get_db  # noqa
     return mock_db
+
+
+@pytest.fixture
+def mock_redis(mocker):
+    mocker.patch("src.api.api.get_cached_data", AsyncMock(return_value=None))
+    mocker.patch("src.api.api.set_cached_data", AsyncMock())
 
 
 async def test_welcome_async(async_client):
@@ -54,7 +60,7 @@ async def test_service_unavailable(async_client):
         assert response.json() == {"detail": "Service Unavailable"}
 
 
-async def test_get_history_with_records(override_get_db, mocker, async_client):
+async def test_get_history_with_records(override_get_db, mocker, async_client, mock_redis):
     mock_data = [{"address": "fake_address", "balance": 100, "bandwidth": 100, "energy": 10}]
 
     mocker.patch("src.api.api.get_records", AsyncMock(return_value=mock_data))
@@ -65,10 +71,21 @@ async def test_get_history_with_records(override_get_db, mocker, async_client):
     assert response.json() == mock_data
 
 
-async def test_get_history_no_records(override_get_db, mocker, async_client):
-    mocker.patch("src.api.api.get_records", AsyncMock(return_value=[]))
+async def test_get_history_with_cached_data(override_get_db, mocker, async_client):
+    cached_data = [{"address": "fake_address", "balance": 100, "bandwidth": 100, "energy": 10}]
+
     mocker.patch("src.api.api.get_cached_data", AsyncMock(return_value=None))
+    mocker.patch("src.api.api.get_cached_data", AsyncMock(return_value=cached_data))
     mocker.patch("src.api.api.set_cached_data", AsyncMock())
+
+    response = await async_client.get("/records?skip=0&limit=10")
+
+    assert response.status_code == 200
+    assert response.json() == cached_data
+
+
+async def test_get_history_no_records(override_get_db, mocker, async_client, mock_redis):
+    mocker.patch("src.api.api.get_records", AsyncMock(return_value=[]))
 
     response = await async_client.get("/records?skip=0&limit=10")
 
@@ -87,11 +104,9 @@ async def test_get_history_server_error(override_get_db, mocker, async_client):
 
 
 @pytest.mark.parametrize("skip, limit", [(0, 10), (5, 5), (10, 2)])
-async def test_get_history_with_pagination(override_get_db, mocker, async_client, skip, limit):
+async def test_get_history_with_pagination(override_get_db, mocker, async_client, skip, limit, mock_redis):
     mock_data = [{"address": "fake_address", "balance": 100, "bandwidth": 100, "energy": 10}]
     mocker.patch("src.api.api.get_records", AsyncMock(return_value=mock_data))
-    mocker.patch("src.api.api.get_cached_data", AsyncMock(return_value=None))
-    mocker.patch("src.api.api.set_cached_data", AsyncMock())
 
     response = await async_client.get(f"/records?skip={skip}&limit={limit}")
 

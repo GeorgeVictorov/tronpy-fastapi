@@ -1,8 +1,9 @@
+import logging
 from typing import List
 
 from fastapi import Depends, HTTPException
-from fastapi.responses import PlainTextResponse
 from fastapi.background import BackgroundTasks
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from tronpy.exceptions import AddressNotFound
 
@@ -10,10 +11,12 @@ from src.ascii_pics import TOTORO
 from src.crud import get_records, save_request
 from src.database import get_db
 from src.main import app
+from src.redis_cache import get_cached_data, get_redis_client, set_cached_data
 from src.schemas import TronRequestCreate, TronRequestResponse
 from src.tron import get_tron_account_info
 
-from src.redis_cache import get_redis_client, get_cached_data, set_cached_data
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @app.post("/add_record", response_model=TronRequestResponse)
@@ -29,6 +32,7 @@ async def get_tron_info(request: TronRequestCreate,
         keys = await redis_client.keys("records-*")
 
         if keys:
+            logger.info(f'Deleting cache -> keys: {keys}')
             await redis_client.delete(*keys)
 
         return saved

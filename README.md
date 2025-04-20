@@ -2,7 +2,8 @@
 
 This is a simple project built with FastAPI to interact with the TRON blockchain.
 
-It includes APIs for retrieving TRON account information and saving data to a database.
+It includes APIs for retrieving TRON account information, caching data in Redis, and saving data to a PostgreSQL
+database.
 
 ## Technologies used
 
@@ -12,6 +13,8 @@ It includes APIs for retrieving TRON account information and saving data to a da
 - **[asyncpg](https://pypi.org/project/asyncpg/)** - Database interface library designed specifically for PostgreSQL
 - **[sqlalchemy[asyncio]](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html)** - ORM for asynchronous
   database interactions
+- **[redis-py (asyncio)](https://redis.readthedocs.io/en/stable/examples/asyncio_examples.html)** – Redis client for
+  async caching using redis.asyncio
 
 ## Example Endpoints
 

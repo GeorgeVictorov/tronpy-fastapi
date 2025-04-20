@@ -17,11 +17,20 @@ from src.redis_cache import get_redis_client, get_cached_data, set_cached_data
 
 
 @app.post("/add_record", response_model=TronRequestResponse)
-async def get_tron_info(request: TronRequestCreate, db: AsyncSession = Depends(get_db)) -> TronRequestResponse:
+async def get_tron_info(request: TronRequestCreate,
+                        db: AsyncSession = Depends(get_db),
+                        redis_client=Depends(get_redis_client)
+                        ) -> TronRequestResponse:
     try:
         data = await get_tron_account_info(request.address)
 
         saved = await save_request(db, request.address, data["balance"], data["bandwidth"], data["energy"])
+
+        keys = await redis_client.keys("records-*")
+
+        if keys:
+            await redis_client.delete(*keys)
+
         return saved
 
     except AddressNotFound:

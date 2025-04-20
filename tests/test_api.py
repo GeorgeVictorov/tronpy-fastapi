@@ -67,6 +67,8 @@ async def test_get_history_with_records(override_get_db, mocker, async_client):
 
 async def test_get_history_no_records(override_get_db, mocker, async_client):
     mocker.patch("src.api.api.get_records", AsyncMock(return_value=[]))
+    mocker.patch("src.api.api.get_cached_data", AsyncMock(return_value=None))
+    mocker.patch("src.api.api.set_cached_data", AsyncMock())
 
     response = await async_client.get("/records?skip=0&limit=10")
 
@@ -76,6 +78,8 @@ async def test_get_history_no_records(override_get_db, mocker, async_client):
 
 async def test_get_history_server_error(override_get_db, mocker, async_client):
     mocker.patch("src.api.api.get_records", AsyncMock(side_effect=Exception("DB error")))
+    mocker.patch("src.api.api.get_cached_data", AsyncMock(return_value=None))
+    mocker.patch("src.api.api.set_cached_data", AsyncMock())
 
     response = await async_client.get("/records?skip=0&limit=10")
 
@@ -86,6 +90,8 @@ async def test_get_history_server_error(override_get_db, mocker, async_client):
 async def test_get_history_with_pagination(override_get_db, mocker, async_client, skip, limit):
     mock_data = [{"address": "fake_address", "balance": 100, "bandwidth": 100, "energy": 10}]
     mocker.patch("src.api.api.get_records", AsyncMock(return_value=mock_data))
+    mocker.patch("src.api.api.get_cached_data", AsyncMock(return_value=None))
+    mocker.patch("src.api.api.set_cached_data", AsyncMock())
 
     response = await async_client.get(f"/records?skip={skip}&limit={limit}")
 

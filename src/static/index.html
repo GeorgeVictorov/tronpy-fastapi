@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <title>TRON API Client</title>
+</head>
+<body>
+    <h1>TRON API Interface</h1>
+
+    <form id="add-form">
+        <label for="address"></label><input type="text" id="address" placeholder="Enter address">
+        <button type="submit">Add Record</button>
+    </form>
+
+    <button onclick="getRecords()">Get Records</button>
+
+    <pre id="output"></pre>
+
+    <script>
+        document.getElementById('add-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const address = document.getElementById('address').value;
+            const response = await fetch('/add_record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address: address })
+            });
+            const data = await response.json();
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        });
+
+        async function getRecords() {
+            const response = await fetch('/records');
+            const data = await response.json();
+            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>

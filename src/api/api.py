@@ -3,11 +3,10 @@ from typing import List
 
 from fastapi import Depends, HTTPException
 from fastapi.background import BackgroundTasks
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from tronpy.exceptions import AddressNotFound
 
-from src.ascii_pics import TOTORO
 from src.crud import get_records, save_request
 from src.database import get_db
 from src.main import app
@@ -69,6 +68,6 @@ async def get_history(background_tasks: BackgroundTasks,
     return [TronRequestResponse(**item) for item in cached]
 
 
-@app.get("/", response_class=PlainTextResponse)
+@app.get("/", response_class=FileResponse)
 async def welcome():
-    return TOTORO
+    return "src/static/index.html"

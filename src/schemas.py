@@ -1,8 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TronRequestCreate(BaseModel):
-    address: str
+    address: str = Field(..., min_length=1)
+
 
 
 class TronRequestResponse(TronRequestCreate):
